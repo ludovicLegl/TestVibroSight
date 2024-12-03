@@ -15,9 +15,10 @@ namespace InterviewTest.App.ViewModel
 {
     public class SharingFoodVm : INotifyPropertyChanged
     {
+       
+        private const double TOLERANCE = 0.0001;
         public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<IProduct> Products { get; set; }
-
         public ObservableCollection<string> Types { get; set; }
 
         private readonly IProductStore _productStore;
@@ -26,7 +27,7 @@ namespace InterviewTest.App.ViewModel
         public ICommand CheckAvailabilityCommand { get; }
 
         private bool _isCheckingAvailability;
-        public bool IsCheckingAvailability 
+        public bool IsCheckingAvailability
         {
             get => _isCheckingAvailability;
             set
@@ -39,7 +40,7 @@ namespace InterviewTest.App.ViewModel
         private string _name;
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 _name = value;
@@ -66,7 +67,7 @@ namespace InterviewTest.App.ViewModel
             get => _unitPrice;
             set
             {
-                if (_unitPrice != value)
+                if (Math.Abs(_unitPrice - value) > TOLERANCE)
                 {
                     _unitPrice = value;
                     OnPropertyChanged(nameof(UnitPrice));
@@ -96,7 +97,6 @@ namespace InterviewTest.App.ViewModel
 
         public SharingFoodVm()
         {
-            //TODO could Improve this
             _productStore = ServiceProvider.Instance.ProductStore;
             Products = new ObservableCollection<IProduct>(_productStore.GetProducts());
             _productStore.ProductAdded += _productStore_ProductAdded;
@@ -132,27 +132,28 @@ namespace InterviewTest.App.ViewModel
         }
         private void CheckIfProductIsValid()
         {
+
             if (string.IsNullOrWhiteSpace(Name))
             {
-                MessageBox.Show("Le nom du produit ne peut pas être vide.");
+                MessageBox.Show("The product name cannot be empty.");
                 return;
             }
 
             if (Quantity <= 0)
             {
-                MessageBox.Show("La quantité doit être supérieure à zéro.");
+                MessageBox.Show("Quantity must be greater than zero.");
                 return;
             }
 
             if (UnitPrice <= 0)
             {
-                MessageBox.Show("Le prix unitaire doit être supérieur à zéro.");
+                MessageBox.Show("Unit price must be greater than zero.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(SelectedType))
             {
-                MessageBox.Show("Veuillez sélectionner un type de produit.");
+                MessageBox.Show("Please select a product type.");
                 return;
             }
         }
@@ -170,7 +171,7 @@ namespace InterviewTest.App.ViewModel
             }
             else
             {
-                MessageBox.Show("Type de produit non valide.");
+                MessageBox.Show("Invalid product type.");
                 return;
             }
             await Task.Run(() => _productStore.AddProduct(product));
@@ -191,7 +192,8 @@ namespace InterviewTest.App.ViewModel
         {
             if (Products == null || !Products.Any())
             {
-                MessageBox.Show("Aucun produit à vérifier.");
+
+                MessageBox.Show("No products to check.");
                 return;
             }
 
