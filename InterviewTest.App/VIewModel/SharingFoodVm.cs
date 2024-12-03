@@ -179,16 +179,22 @@ namespace InterviewTest.App.ViewModel
 
         private void RefreshProducts()
         {
-            var products = _productStore.GetProducts().ToList();
+            var products = _productStore.GetProducts();
             Products.Clear();
             foreach (var product in products)
             {
                 Products.Add(product);
             }
         }
-        //TODO
+
         private async Task CheckAvailability()
         {
+            if (Products == null || !Products.Any())
+            {
+                MessageBox.Show("Aucun produit à vérifier.");
+                return;
+            }
+
             IsCheckingAvailability = false;
             bool anyError = false;
             var sb = new StringBuilder();

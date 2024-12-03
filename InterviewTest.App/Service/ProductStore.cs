@@ -9,9 +9,9 @@ namespace InterviewTest.App.Service
     public class ProductStore : IProductStore
     {
         private readonly List<IProduct> _products = new List<IProduct>();
-        public IEnumerable<IProduct> GetProducts()
+        public List<IProduct> GetProducts()
         {
-            return _products.ToList();
+            return _products;
         }
 
         public ProductStore()

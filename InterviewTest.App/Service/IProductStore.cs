@@ -6,7 +6,7 @@ namespace InterviewTest.App.Service
 {
     public interface IProductStore
     {
-        IEnumerable<IProduct> GetProducts();
+        List<IProduct> GetProducts();
         void AddProduct(IProduct product);
         void RemoveProduct(Guid productId);
 
