@@ -1,5 +1,4 @@
-﻿using InterviewTest.App.Service;
-using System;
+﻿using System;
 
 namespace InterviewTest.App.Model
 {
@@ -8,14 +7,14 @@ namespace InterviewTest.App.Model
         public Guid Id { get; }
         public string Name { get; set; }
         public int Count { get; set; }
-        public int UnitPrice { get; set; }
-        public int TotalPrice
+        public double UnitPrice { get; set; }
+        public double TotalPrice
         {
             get { return UnitPrice * Count; }
         }
         public HealthIndex HealthIndex { get; }
 
-        public Fruit(string name, int count, int unitPrice)
+        public Fruit(string name, int count, double unitPrice)
         {
             Id = Guid.NewGuid();
             HealthIndex = HealthIndex.Average;

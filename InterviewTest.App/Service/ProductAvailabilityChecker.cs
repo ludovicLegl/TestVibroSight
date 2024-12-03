@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using InterviewTest.App.Model;
+using System.Threading;
 
 namespace InterviewTest.App.Service
 {

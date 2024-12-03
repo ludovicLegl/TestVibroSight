@@ -1,26 +1,90 @@
-﻿using InterviewTest.App.Service;
+﻿using InterviewTest.App.Model;
+using InterviewTest.App.Service;
+using InterviewTest.App.ViewModel.Helper;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-namespace InterviewTest.App.VIewModel
+namespace InterviewTest.App.ViewModel
 {
-    public class SharingFoodVm
+    public class SharingFoodVm : INotifyPropertyChanged
     {
-        private readonly List<IProduct> _products = new List<IProduct>();
+        public event PropertyChangedEventHandler PropertyChanged;
+        private readonly List<IProduct> _products = [];
         private readonly IProductStore _productStore;
+        public ObservableCollection<string> Types { get; set; }
+        public ICommand AddProductCommand { get; }
+
+        private string _name;
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                _name = value;
+                OnPropertyChanged(nameof(Name));
+            }
+        }
+        private int _quantity;
+        public int Quantity
+        {
+            get => _quantity;
+            set
+            {
+                if (_quantity != value)
+                {
+                    _quantity = value;
+                    OnPropertyChanged(nameof(Quantity));
+                }
+            }
+        }
+
+        private double _unitPrice;
+        public double UnitPrice
+        {
+            get => _unitPrice;
+            set
+            {
+                if (_unitPrice != value)
+                {
+                    _unitPrice = value;
+                    OnPropertyChanged(nameof(UnitPrice));
+                }
+            }
+        }
+        private string _selectedType;
+        public string SelectedType
+        {
+            get => _selectedType;
+            set
+            {
+                _selectedType = value;
+                OnPropertyChanged(nameof(SelectedType));
+            }
+        }
+
+
+
+
 
         public SharingFoodVm()
         {
             _productStore = ServiceProvider.Instance.ProductStore;
+            //TODO
             _products.AddRange(_productStore.GetProducts());
             _productStore.ProductAdded += _productStore_ProductAdded;
             _productStore.ProductRemoved += _productStore_ProductRemoved;
+            Types = new ObservableCollection<string> { "Fruit", "Vegetable" };
+
+
+            AddProductCommand = new AsyncRelayCommand(AddProduct);
         }
 
         private void _productStore_ProductAdded(IProduct obj)
@@ -37,31 +101,13 @@ namespace InterviewTest.App.VIewModel
                 RefreshProducts();
             }
         }
-        private void _unitprice_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex(@"^\d+$");
-            e.Handled = !regex.IsMatch(e.Text);
-        }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private async Task AddProduct()
         {
-            /*    String name = _name.Text;
-                int up;
-                int qty;
-                IProduct p;
-                if (!String.IsNullOrEmpty(_type.Text) && int.TryParse(_unitprice.Text, out up) && int.TryParse(_quantity.Text, out qty))
-                {
-                    if (_type.Text == "Vegetable")
-                    {
-                        p = new Vegetable(name, qty, up);
-                    }
-                    else
-                    {
 
-                        p = new Fruit(name, qty, up);
-                    }
-                    _productStore.ap(p);
-                }*/
+            IProduct p = SelectedType == "Vegetable" ? new Vegetable(Name, Quantity, UnitPrice) : new Fruit(Name, Quantity, UnitPrice);
+            await Task.Run(() => _productStore.AddProduct(p));
+
         }
         private void RefreshProducts()
         {
@@ -106,6 +152,10 @@ namespace InterviewTest.App.VIewModel
             {
                 //     MessageBox.Show(this, sb.ToString());
             }
+        }
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

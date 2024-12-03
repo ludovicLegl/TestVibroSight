@@ -5,12 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:InterviewTest.App.View" 
         xmlns:conv="clr-namespace:InterviewTest.App.View.Converter"
+        xmlns:vm="clr-namespace:InterviewTest.App.ViewModel"
+        xmlns:val="clr-namespace:InterviewTest.App.View.Validation"
         mc:Ignorable="d"
         Title="Food Inc - List sharing" Height="350" Width="525" Icon="../Resources/1499284707_fruit_grapes.png">
     <Window.Resources>
         <conv:HealthIndexColorConverter x:Key="HealthIndexColorConverter"/>
+        <conv:NullOrEmptyStringToBoolConverter x:Key="NullOrEmptyStringToBoolConverter"/>
+        <conv:ZeroToBoolConverter x:Key="ZeroToBoolConverter"/>
+        <vm:SharingFoodVm x:Key="vm"/>
     </Window.Resources>
-    <Grid>
+    <Grid DataContext="{StaticResource vm}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
@@ -19,7 +24,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox Name="_productList" HorizontalContentAlignment="Stretch">
+        <ListBox Name="ProductListBox" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid HorizontalAlignment="Stretch" Margin="5"
@@ -33,19 +38,15 @@
                             <RowDefinition />
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal">
-                            <Label VerticalAlignment="Center" Content="{Binding Count }" Margin="0" />
+                            <Label VerticalAlignment="Center" Content="{Binding Count}" Margin="0" />
                             <Label VerticalAlignment="Center" Margin="0">x</Label>
-                            <Label VerticalAlignment="Center" Margin="0" Content="{Binding Name }" FontWeight="Bold"
+                            <Label VerticalAlignment="Center" Margin="0" Content="{Binding Name}" FontWeight="Bold"
                                    FontSize="20" />
                         </StackPanel>
                         <Label Grid.Row="1" Content="{Binding UnitPrice}" FontWeight="Light" FontStyle="Italic"
                                ContentStringFormat="{}{0} $" />
-
-
                         <Label Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.RowSpan="2"
                                Content="{Binding TotalPrice}" FontSize="30" ContentStringFormat="{}{0} $" />
-
-
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -65,28 +66,59 @@
             <Label Content="Add something to the list:" HorizontalAlignment="Left" Margin="10,10,0,0"
                    VerticalAlignment="Top" Grid.ColumnSpan="2" FontWeight="Bold" />
             <Label Content="Type" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="1" VerticalAlignment="Top" />
-            <ComboBox x:Name="_type" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Top"
-                      Width="120">
-                <ListBoxItem Content="Fruit" />
-                <ListBoxItem Content="Vegetable" />
-            </ComboBox>
+            <ComboBox x:Name="TypeComboBox" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Top"
+                 Width="120" ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
             <Label Content="Name" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="2" VerticalAlignment="Top" />
-            <TextBox x:Name="_name" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="0,10,0,0"
-                     Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" />
+            <TextBox x:Name="TxtName" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="0,10,0,0"
+                     Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="{Binding Name, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
             <Label Content="Quantity" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="3"
                    VerticalAlignment="Top" />
-            <TextBox x:Name="_quantity" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="0,13,0,0"
-                     Grid.Row="3" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <TextBox x:Name="TxtQuantity" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="0,13,0,0"
+                     Grid.Row="3" TextWrapping="Wrap" VerticalAlignment="Top" Width="120">
+                <TextBox.Text>
+                    <Binding Path="Quantity" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <val:PositiveNumberValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
             <Label Content="Unit Price" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="4"
                    VerticalAlignment="Top" />
-            <TextBox x:Name="_unitprice" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="5,13,0,0"
-                     Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-            <Button x:Name="button" Content="Add" Grid.Column="1" HorizontalAlignment="Left" Margin="34,106,0,0"
-                    Grid.Row="4" VerticalAlignment="Top" Width="75"/>
-
+            <TextBox x:Name="TxtUnitPrice" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="5,13,0,0"
+                     Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="120">
+                <TextBox.Text>
+                    <Binding Path="UnitPrice" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <val:PositiveNumberValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button x:Name="AddButton" Content="Add" Grid.Column="1" HorizontalAlignment="Left" Margin="34,106,0,0"
+        Grid.Row="4" VerticalAlignment="Top" Width="75" Command="{Binding AddProductCommand}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="IsEnabled" Value="False"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Name, Converter={StaticResource NullOrEmptyStringToBoolConverter}}" Value="True"/>
+                                    <Condition Binding="{Binding SelectedType, Converter={StaticResource NullOrEmptyStringToBoolConverter}}" Value="True"/>
+                                    <Condition Binding="{Binding Quantity, Converter={StaticResource ZeroToBoolConverter}}" Value="True"/>
+                                    <Condition Binding="{Binding UnitPrice, Converter={StaticResource ZeroToBoolConverter}}" Value="True"/>
+                                    <Condition Binding="{Binding ElementName=TxtQuantity, Path=(Validation.HasError)}" Value="False"/>
+                                    <Condition Binding="{Binding ElementName=TxtUnitPrice, Path=(Validation.HasError)}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
         <StackPanel Grid.Row="1">
-            <Button>Check store availability</Button>
+            <Button x:Name="CheckStoreAvailabilityButton">Check store availability</Button>
         </StackPanel>
     </Grid>
 </Window>

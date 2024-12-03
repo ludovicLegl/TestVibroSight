@@ -1,4 +1,4 @@
-﻿namespace InterviewTest.App.Service
+﻿namespace InterviewTest.App.Model
 {
     public enum HealthIndex
     {
