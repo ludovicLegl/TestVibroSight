@@ -24,7 +24,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox Name="ProductListBox" HorizontalContentAlignment="Stretch">
+        <ListBox Name="ProductListBox" HorizontalContentAlignment="Stretch" ItemsSource ="{Binding Products}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid HorizontalAlignment="Stretch" Margin="5"
@@ -118,7 +118,10 @@
             </Button>
         </Grid>
         <StackPanel Grid.Row="1">
-            <Button x:Name="CheckStoreAvailabilityButton">Check store availability</Button>
+            <Button x:Name="CheckStoreAvailabilityButton" Command="{Binding CheckAvailabilityCommand}" 
+                IsEnabled="{Binding IsCheckingAvailability}">
+                Check store availability
+            </Button>
         </StackPanel>
     </Grid>
 </Window>
